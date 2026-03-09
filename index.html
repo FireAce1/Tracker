@@ -1,42 +1,39 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Developer Productivity Dashboard</title>
+<title>AI Productivity Tracker</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen p-6">
+<body class="bg-gray-100 p-6">
 
-<div class="max-w-6xl mx-auto bg-white shadow-xl rounded-xl p-6">
+<div class="max-w-6xl mx-auto bg-white p-6 rounded-xl shadow">
 
-<h1 class="text-3xl font-bold text-center mb-2">
-🚀 Developer Productivity Dashboard
+<h1 class="text-3xl font-bold text-center mb-4">
+🚀 AI Developer Routine Tracker
 </h1>
 
 <p class="text-center text-gray-500 mb-6">
-Track coding, learning, fitness and content creation
+Track habits, maintain streaks and generate AI study plans
 </p>
 
 <!-- STREAK -->
+
 <div class="text-center mb-6">
-🔥 Current Streak: 
+
+🔥 Current Streak:
 <span id="streak" class="text-green-600 font-bold text-xl">0</span> days
+
 </div>
 
-<!-- PROGRESS BAR -->
-<div class="mb-6">
-<div class="w-full bg-gray-200 rounded-full h-4">
-<div id="progressBar" class="bg-green-500 h-4 rounded-full" style="width:0%"></div>
-</div>
-<p id="progressText" class="text-center text-sm mt-2">0% completed</p>
-</div>
+<!-- DAILY TASKS -->
 
-<!-- TASKS -->
-<h2 class="font-semibold mb-3">Daily Routine</h2>
+<h2 class="font-semibold mb-3">Daily Tasks</h2>
 
-<ul id="tasks" class="grid md:grid-cols-2 gap-3 mb-8">
+<ul id="tasks" class="grid grid-cols-2 gap-2 mb-6">
 
 <li><label><input type="checkbox" class="task mr-2">DSA Practice</label></li>
 <li><label><input type="checkbox" class="task mr-2">Java Revision</label></li>
@@ -49,55 +46,58 @@ Track coding, learning, fitness and content creation
 
 </ul>
 
-<div class="flex gap-3 mb-8">
-<button onclick="completeDay()" 
-class="bg-green-600 text-white px-4 py-2 rounded-lg">
+<button onclick="completeDay()"
+class="bg-green-600 text-white px-4 py-2 rounded mb-8">
 Mark Day Complete
 </button>
 
-<button onclick="resetTasks()" 
-class="bg-red-500 text-white px-4 py-2 rounded-lg">
-Reset
-</button>
-</div>
+<!-- AI ROUTINE PLANNER -->
 
-<!-- POMODORO -->
-<h2 class="font-semibold mb-3">⏱ Pomodoro Focus Timer</h2>
+<h2 class="text-xl font-semibold mb-4">
+🧠 AI Routine Planner
+</h2>
 
-<div class="flex items-center gap-4 mb-8">
-<span id="timer" class="text-2xl font-bold">25:00</span>
+<div class="grid md:grid-cols-3 gap-3 mb-4">
 
-<button onclick="startTimer()" 
-class="bg-blue-600 text-white px-3 py-1 rounded">
-Start
-</button>
+<input id="hours"
+type="number"
+placeholder="Available hours"
+class="border p-2 rounded">
 
-<button onclick="resetTimer()" 
-class="bg-gray-500 text-white px-3 py-1 rounded">
-Reset
-</button>
-</div>
+<select id="focus"
+class="border p-2 rounded">
 
-<!-- CALENDAR -->
-<h2 class="font-semibold mb-3">📅 Quick Planner</h2>
+<option value="coding">Coding</option>
+<option value="cloud">Cloud</option>
+<option value="devops">DevOps</option>
+<option value="content">Content Creation</option>
 
-<div class="flex gap-2 mb-6">
+</select>
 
-<input id="eventInput"
-class="border rounded p-2 flex-1"
-placeholder="Add task or reminder">
+<select id="energy"
+class="border p-2 rounded">
 
-<button onclick="addEvent()" 
-class="bg-purple-600 text-white px-4 rounded">
-Add
-</button>
+<option value="high">High Energy</option>
+<option value="medium">Medium Energy</option>
+<option value="low">Low Energy</option>
+
+</select>
 
 </div>
 
-<ul id="eventList" class="mb-8 space-y-2"></ul>
+<button onclick="generatePlan()"
+class="bg-blue-600 text-white px-4 py-2 rounded">
+Generate AI Plan
+</button>
+
+<div id="plan"
+class="mt-6 p-4 bg-gray-50 rounded"></div>
 
 <!-- HEATMAP -->
-<h2 class="font-semibold mb-3">🔥 Contribution Graph</h2>
+
+<h2 class="mt-8 font-semibold mb-2">
+🔥 Contribution Graph
+</h2>
 
 <div id="heatmap" class="grid grid-cols-30 gap-1"></div>
 
@@ -105,44 +105,11 @@ Add
 
 <script>
 
-const tasks = document.querySelectorAll(".task")
-
-function updateProgress(){
-
-let done=0
-
-tasks.forEach(t=>{
-if(t.checked) done++
-})
-
-let percent=(done/tasks.length)*100
-
-document.getElementById("progressBar").style.width=percent+"%"
-document.getElementById("progressText").innerText=Math.round(percent)+"% completed"
-
-}
-
-tasks.forEach(t=>{
-t.addEventListener("change",updateProgress)
-})
-
-function resetTasks(){
-tasks.forEach(t=>t.checked=false)
-updateProgress()
-}
-
 function getToday(){
 return new Date().toISOString().slice(0,10)
 }
 
 function completeDay(){
-
-let percent=parseInt(document.getElementById("progressBar").style.width)
-
-if(percent<70){
-alert("Complete more tasks first")
-return
-}
 
 let data=JSON.parse(localStorage.getItem("heatmap")||"{}")
 
@@ -186,9 +153,9 @@ function loadHeatmap(){
 
 let data=JSON.parse(localStorage.getItem("heatmap")||"{}")
 
-let heatmap=document.getElementById("heatmap")
+let map=document.getElementById("heatmap")
 
-heatmap.innerHTML=""
+map.innerHTML=""
 
 for(let i=0;i<365;i++){
 
@@ -207,7 +174,7 @@ let cell=document.createElement("div")
 
 cell.className="w-3 h-3 rounded "+color
 
-heatmap.appendChild(cell)
+map.appendChild(cell)
 
 }
 
@@ -216,69 +183,82 @@ heatmap.appendChild(cell)
 updateStreak()
 loadHeatmap()
 
-/* Pomodoro */
+/* AI ROUTINE PLANNER */
 
-let timer
-let seconds=1500
+function generatePlan(){
 
-function startTimer(){
+let hours=document.getElementById("hours").value
+let focus=document.getElementById("focus").value
+let energy=document.getElementById("energy").value
 
-timer=setInterval(()=>{
+let plan=""
 
-seconds--
+if(focus==="coding"){
 
-let m=Math.floor(seconds/60)
-let s=seconds%60
+plan=`
+Morning
+• DSA Practice (45m)
 
-document.getElementById("timer").innerText=
-m+":"+(s<10?"0":"")+s
+Afternoon
+• Java Interview Questions (45m)
 
-if(seconds<=0){
-
-clearInterval(timer)
-
-alert("Pomodoro finished!")
-
-}
-
-},1000)
+Evening
+• System Design (30m)
+`
 
 }
 
-function resetTimer(){
+if(focus==="cloud"){
 
-clearInterval(timer)
+plan=`
+Morning
+• AWS Services (1h)
 
-seconds=1500
+Afternoon
+• Terraform Practice (30m)
 
-document.getElementById("timer").innerText="25:00"
+Evening
+• Architecture Study (30m)
+`
 
 }
 
-/* Planner */
+if(focus==="devops"){
 
-function addEvent(){
+plan=`
+Morning
+• Terraform Labs (45m)
 
-let input=document.getElementById("eventInput")
+Afternoon
+• Ansible Automation (45m)
 
-let list=document.getElementById("eventList")
+Evening
+• CI/CD Concepts (30m)
+`
 
-if(input.value==="") return
+}
 
-let li=document.createElement("li")
+if(focus==="content"){
 
-li.className="bg-gray-100 p-2 rounded"
+plan=`
+Morning
+• Script Writing (30m)
 
-li.innerText=input.value
+Afternoon
+• Video Editing (1h)
 
-list.appendChild(li)
+Evening
+• Social Media Posting (30m)
+`
 
-input.value=""
+}
+
+document.getElementById("plan").innerText=plan
 
 }
 
 </script>
 
 </body>
-</html>
 
+</html>
