@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Developer Productivity Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen p-6">
+
+<div class="max-w-6xl mx-auto bg-white shadow-xl rounded-xl p-6">
+
+<h1 class="text-3xl font-bold text-center mb-2">
+🚀 Developer Productivity Dashboard
+</h1>
+
+<p class="text-center text-gray-500 mb-6">
+Track coding, learning, fitness and content creation
+</p>
+
+<!-- STREAK -->
+<div class="text-center mb-6">
+🔥 Current Streak: 
+<span id="streak" class="text-green-600 font-bold text-xl">0</span> days
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="mb-6">
+<div class="w-full bg-gray-200 rounded-full h-4">
+<div id="progressBar" class="bg-green-500 h-4 rounded-full" style="width:0%"></div>
+</div>
+<p id="progressText" class="text-center text-sm mt-2">0% completed</p>
+</div>
+
+<!-- TASKS -->
+<h2 class="font-semibold mb-3">Daily Routine</h2>
+
+<ul id="tasks" class="grid md:grid-cols-2 gap-3 mb-8">
+
+<li><label><input type="checkbox" class="task mr-2">DSA Practice</label></li>
+<li><label><input type="checkbox" class="task mr-2">Java Revision</label></li>
+<li><label><input type="checkbox" class="task mr-2">Spring Boot</label></li>
+<li><label><input type="checkbox" class="task mr-2">AWS Learning</label></li>
+<li><label><input type="checkbox" class="task mr-2">System Design</label></li>
+<li><label><input type="checkbox" class="task mr-2">Terraform / Ansible</label></li>
+<li><label><input type="checkbox" class="task mr-2">Video Editing</label></li>
+<li><label><input type="checkbox" class="task mr-2">Gym Workout</label></li>
+
+</ul>
+
+<div class="flex gap-3 mb-8">
+<button onclick="completeDay()" 
+class="bg-green-600 text-white px-4 py-2 rounded-lg">
+Mark Day Complete
+</button>
+
+<button onclick="resetTasks()" 
+class="bg-red-500 text-white px-4 py-2 rounded-lg">
+Reset
+</button>
+</div>
+
+<!-- POMODORO -->
+<h2 class="font-semibold mb-3">⏱ Pomodoro Focus Timer</h2>
+
+<div class="flex items-center gap-4 mb-8">
+<span id="timer" class="text-2xl font-bold">25:00</span>
+
+<button onclick="startTimer()" 
+class="bg-blue-600 text-white px-3 py-1 rounded">
+Start
+</button>
+
+<button onclick="resetTimer()" 
+class="bg-gray-500 text-white px-3 py-1 rounded">
+Reset
+</button>
+</div>
+
+<!-- CALENDAR -->
+<h2 class="font-semibold mb-3">📅 Quick Planner</h2>
+
+<div class="flex gap-2 mb-6">
+
+<input id="eventInput"
+class="border rounded p-2 flex-1"
+placeholder="Add task or reminder">
+
+<button onclick="addEvent()" 
+class="bg-purple-600 text-white px-4 rounded">
+Add
+</button>
+
+</div>
+
+<ul id="eventList" class="mb-8 space-y-2"></ul>
+
+<!-- HEATMAP -->
+<h2 class="font-semibold mb-3">🔥 Contribution Graph</h2>
+
+<div id="heatmap" class="grid grid-cols-30 gap-1"></div>
+
+</div>
+
+<script>
+
+const tasks = document.querySelectorAll(".task")
+
+function updateProgress(){
+
+let done=0
+
+tasks.forEach(t=>{
+if(t.checked) done++
+})
+
+let percent=(done/tasks.length)*100
+
+document.getElementById("progressBar").style.width=percent+"%"
+document.getElementById("progressText").innerText=Math.round(percent)+"% completed"
+
+}
+
+tasks.forEach(t=>{
+t.addEventListener("change",updateProgress)
+})
+
+function resetTasks(){
+tasks.forEach(t=>t.checked=false)
+updateProgress()
+}
+
+function getToday(){
+return new Date().toISOString().slice(0,10)
+}
+
+function completeDay(){
+
+let percent=parseInt(document.getElementById("progressBar").style.width)
+
+if(percent<70){
+alert("Complete more tasks first")
+return
+}
+
+let data=JSON.parse(localStorage.getItem("heatmap")||"{}")
+
+let today=getToday()
+
+data[today]=1
+
+localStorage.setItem("heatmap",JSON.stringify(data))
+
+updateStreak()
+loadHeatmap()
+
+}
+
+function updateStreak(){
+
+let data=JSON.parse(localStorage.getItem("heatmap")||"{}")
+
+let streak=0
+
+for(let i=0;i<365;i++){
+
+let d=new Date()
+d.setDate(d.getDate()-i)
+
+let key=d.toISOString().slice(0,10)
+
+if(data[key]){
+streak++
+}else{
+break
+}
+
+}
+
+document.getElementById("streak").innerText=streak
+
+}
+
+function loadHeatmap(){
+
+let data=JSON.parse(localStorage.getItem("heatmap")||"{}")
+
+let heatmap=document.getElementById("heatmap")
+
+heatmap.innerHTML=""
+
+for(let i=0;i<365;i++){
+
+let d=new Date()
+d.setDate(d.getDate()-i)
+
+let key=d.toISOString().slice(0,10)
+
+let val=data[key]
+
+let color="bg-gray-200"
+
+if(val) color="bg-green-600"
+
+let cell=document.createElement("div")
+
+cell.className="w-3 h-3 rounded "+color
+
+heatmap.appendChild(cell)
+
+}
+
+}
+
+updateStreak()
+loadHeatmap()
+
+/* Pomodoro */
+
+let timer
+let seconds=1500
+
+function startTimer(){
+
+timer=setInterval(()=>{
+
+seconds--
+
+let m=Math.floor(seconds/60)
+let s=seconds%60
+
+document.getElementById("timer").innerText=
+m+":"+(s<10?"0":"")+s
+
+if(seconds<=0){
+
+clearInterval(timer)
+
+alert("Pomodoro finished!")
+
+}
+
+},1000)
+
+}
+
+function resetTimer(){
+
+clearInterval(timer)
+
+seconds=1500
+
+document.getElementById("timer").innerText="25:00"
+
+}
+
+/* Planner */
+
+function addEvent(){
+
+let input=document.getElementById("eventInput")
+
+let list=document.getElementById("eventList")
+
+if(input.value==="") return
+
+let li=document.createElement("li")
+
+li.className="bg-gray-100 p-2 rounded"
+
+li.innerText=input.value
+
+list.appendChild(li)
+
+input.value=""
+
+}
+
+</script>
+
+</body>
+</html>
+
